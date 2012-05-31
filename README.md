@@ -7,7 +7,9 @@ This project is still very much a work in progress and will likely change signif
 Coming soon!
 
 ##Installation
-Simply clone this repo, `npm install` to get the dependencies, then create a `config.js` for your particular setup. There is a sample config provided in this repo. You will need a [redis](http://redis.io/) server to connect to which will be used to store custom commands and words the bot has 'learned'. After these things have been setup, you can run the bot by simply doing:
+Simply clone this repo, `npm install` to get the dependencies, then create a `config.js` for your particular setup. There is a sample config provided in this repo. You will need a [redis](http://redis.io/) server to connect to which will be used to store custom commands and words the bot has 'learned'.
+
+After these things have been setup, you can run the bot by simply doing:
 ```
 node index.js
 ```
