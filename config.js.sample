@@ -1,6 +1,7 @@
 // this is just a normal JS file
 // the exports should simply define some or all of the following
 module.exports =  { nick: 'tecnorita'
+                  , server: 'irc.quakenet.org:6667'
                   , channels: [ '#chat'
                               , '#private password' // for channels with +k
                               ]
