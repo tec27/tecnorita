@@ -61,7 +61,7 @@ Tecnorita.prototype.onTopic = function(channel, topic, nick, message) {
 Tecnorita.prototype.onNickChange = function(oldNick, newNick, channels, message) {
   _.each(this.channels, function(chanData) {
     var oldVal = chanData[oldNick] || ''
-    delete chanData[oldNick]
+    ;delete chanData[oldNick]
     chanData[newNick] = oldVal
   })
 }
