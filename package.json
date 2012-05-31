@@ -1,0 +1,17 @@
+{
+  "author": "tec27 <travis@tec27.com> (tec27.com)",
+  "name": "tecnorita",
+  "description": "An irc bot proficient in lounging around and doing stuff (and occasionally mixing it up).",
+  "version": "0.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "irc": ">= 0.3.4",
+    "redis": ">= 0.7.2",
+    "hiredis": ">= 0.1.14"
+  },
+  "devDependencies": {},
+  "optionalDependencies": {},
+  "engines": {
+    "node": "*"
+  }
+}
