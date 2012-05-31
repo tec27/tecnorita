@@ -28,6 +28,9 @@ function Tecnorita(config) {
 
   this.config = config
   this.channels = {}
+  this.messageHandlers =  [ require('./direct.js')
+                          , require('./indirect.js')
+                          ]
 }
 
 Tecnorita.prototype.onRegistered = function(message) {
@@ -48,8 +51,6 @@ Tecnorita.prototype.onNames = function(channel, nicks) {
 }
 
 Tecnorita.prototype.onTopic = function(channel, topic, nick, message) {
-  console.log('topic nick: %s', nick)
-  console.dir(message)
   this.channels[channel] = this.channels[channel] || {}
   this.channels[channel].topic =  { msg: topic
                                   , setBy: nick
@@ -66,7 +67,10 @@ Tecnorita.prototype.onNickChange = function(oldNick, newNick, channels, message)
 }
 
 Tecnorita.prototype.onMessage = function(nick, to, text, message) {
-
+  for(var i = 0; i < this.messageHandlers.length; i++) {
+    var res = this.messageHandlers[i](this, nick, to, text, message)
+    if(res) break;
+  }
 }
 
 var tecnorita = new Tecnorita(config)
