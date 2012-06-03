@@ -22,9 +22,9 @@ var AdhocCommand = module.exports.AdhocCommand = function(tokenChain) {
 AdhocCommand.prototype.execute = function(params, cb) {
   var self = this
   process.nextTick(function onAdhocExecNextTick() {
-    // first, verify that all of the commands exist
     var i = 0
       , cmds = []
+    // verify that all the required commands exist and retrieve their descriptors
     function validate(err, cmd) {
       if(err) return cb(err)
       if(cmd != null) cmds.push(cmd)
@@ -37,6 +37,7 @@ AdhocCommand.prototype.execute = function(params, cb) {
       i++
     }
 
+    // execute command chain (called after we verify all commands)
     function exec(err, result) {
       if(err) return cb(err)
       if(i >= self.chain.length) {
