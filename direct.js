@@ -1,5 +1,7 @@
 /*jshint laxcomma:true asi:true */
 var cmdParser = require('./command-parser')
+  , util = require('util')
+  , commands = require('./commands/commands')
 
 // "direct" messages will be prepended with our nickname (in some form)
 // since some irc clients add extra characters for tab-completed nicks, we'll try to handle these
@@ -51,13 +53,40 @@ function stripColors(text) {
 
 function parseAndExec(tecnorita, from, to, command, message) {
   var target = to != tecnorita.config.nick ? to : from
-  tecnorita.chat.say(target, 'direct: ' + command)
+    , parsedCmd
+
+  try {
+    parsedCmd = cmdParser(command)
+  }
+  catch(err) {
+    return tecnorita.chat.say(target, err.message)
+  }
+
+  //tecnorita.chat.say(target, util.inspect(parsedCmd).replace(/\n/g, ''))
+  var executor = new commands.AdhocCommand(parsedCmd)
+  executor.execute(null, function onExecutedCommand(err, result) {
+    if(err) return tecnorita.chat.say(target, 'Error: ' + err.message)
+    handleResult(tecnorita, target, message, result)
+  })
 }
 
-function NativeCommand() {
-
+function handleResult(tecnorita, target, raw, result) {
+  if(typeof result == 'undefined' || result === null) return
+  else if(isFunction(result)) result(tecnorita, target, raw)
+  else if(isString(result)) tecnorita.chat.say(target, result)
+  else {
+    var strResult = util.inspect(result).replace(/\n/g, '')
+    if(strResult.length > 450) strResult = strResult.substr(0, 447) + '...'
+    tecnorita.chat.say(target, strResult)
+  }
 }
 
-function CompositeCommand() {
+function isFunction(o) {
+  return (typeof o == 'function' ||
+          (typeof of == 'object' && Object.prototype.toString.call(o) == '[object Function]'))
+}
 
+function isString(o) {
+  return (typeof o == 'string' ||
+          (typeof o == 'object' && Object.prototype.toString.call(o) == '[object String]'))
 }
