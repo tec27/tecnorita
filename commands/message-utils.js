@@ -1,8 +1,9 @@
+/*jshint laxcomma:true asi:true */
 var Builtin = require('./commands').BuiltinCommand
 
 module.exports = function(cmdList) {
-  cmdList.echo = new Builtin('echo', 'message', echo)
-  cmdList.emote = new Builtin('emote', 'action', emote)
+  cmdList.echo = new Builtin('echo', ['message'], echo)
+  cmdList.emote = new Builtin('emote', ['action'], emote)
 }
 
 function echo(params, cb) {

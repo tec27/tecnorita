@@ -27,7 +27,7 @@ AdhocCommand.prototype.execute = function(params, cb) {
     // verify that all the required commands exist and retrieve their descriptors
     function validate(err, cmd) {
       if(err) return cb(err)
-      if(cmd != null) cmds.push(cmd)
+      if(cmd) cmds.push(cmd)
       if(i >= self.chain.length) { // finished validating, execute the chain
         i = 0
         return exec(null, params)
