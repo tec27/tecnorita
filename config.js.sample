@@ -7,4 +7,5 @@ module.exports =  { nick: 'tecnorita'
                               ]
                   , admins: [ 'user!~name@host.com' ]
                   , redis: 'localhost:6379'
+                  , shortPrefix: '`'
                   }

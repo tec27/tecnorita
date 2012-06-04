@@ -8,11 +8,15 @@ var cmdParser = require('./command-parser')
 // PM's are also considered 'direct' messages automatically
 var directHandler = module.exports = function(tecnorita, from, to, text, message) {
   var myNick = tecnorita.config.nick
+    , shortPrefix = tecnorita.config.shortPrefix
     , stripped = stripColors(text).trim()
     , command = ''
 
   if(to == myNick) { // PM
     command = text // in this case, no prefix is expected
+  }
+  else if(shortPrefix && text.slice(0, shortPrefix.length) == tecnorita.config.shortPrefix) {
+    command = text.substr(shortPrefix.length)
   }
   else if(stripped.split(/[:,. ]+/, 2)[0] == myNick) {
     // remove prefix (without removing colors/formatting from the rest of the message)
