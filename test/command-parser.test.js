@@ -1,5 +1,5 @@
 var should = require('should')
-  , parser = require('../command-parser.js')
+  , parser = require('../command-parser')
 
 describe('command-parser', function() {
   it('should parse a simple line', function() {
@@ -18,7 +18,6 @@ describe('command-parser', function() {
     parser('my "quoted string"').should.eql([ ['my', 'quoted string'] ])
     parser('"my quoted" string').should.eql([ ['my quoted', 'string'] ])
     parser('my"not quoted string').should.eql([ ['my"not', 'quoted', 'string'] ])
-    parser('"my quoted"string').should.eql([ ['my quoted', 'string'] ])
     parser('"should handle | pipes"').should.eql([ ['should handle | pipes'] ])
   })
 
@@ -54,5 +53,46 @@ describe('command-parser', function() {
       , [ 'to', 'a', 'third', 'command' ]
       ]
     )
+  })
+
+  it('should handle arrays', function() {
+    parser('test [ arrays, are, cool , woo ,yes ]').should.eql(
+      [ ['test',  [ 'arrays'
+                  , 'are'
+                  , 'cool'
+                  , 'woo'
+                  , 'yes'
+                  ]
+        ]
+      ]
+    )
+  })
+
+  it('should handle arrays with quoted entries', function() {
+    parser('test [ "arrays, with, quoted", things ]').should.eql(
+      [ ['test',  [ 'arrays, with, quoted'
+                  , 'things'
+                  ]
+        ]
+      ]
+    )
+  })
+
+  it('should handle subfunctions', function() {
+    var res = parser('test { test2 | test3 } { test4 | test5 }')
+    res[0].length.should.eql(3)
+    res[0][0].should.eql('test')
+    res[0][1].chain.should.eql([ ['test2'], ['test3'] ])
+    res[0][2].chain.should.eql([ ['test4'], ['test5'] ])
+  })
+
+  it('should handle nested subfunctions', function() {
+    var res = parser('test { test2 { test3 | test4 } | test5 }')
+    res[0].length.should.eql(2)
+    res[0][0].should.eql('test')
+    res[0][1].chain.length.should.eql(2)
+    res[0][1].chain[0][0].should.eql('test2')
+    res[0][1].chain[0][1].chain.should.eql([ ['test3'], ['test4'] ])
+    res[0][1].chain[1].should.eql([ 'test5' ])
   })
 })
