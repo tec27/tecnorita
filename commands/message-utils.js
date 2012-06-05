@@ -8,7 +8,10 @@ module.exports = function(cmdList) {
 
 function echo(params, cb) {
   process.nextTick(function() {
-    cb(null, params.join(' '))
+    if(params._rest && params._rest.length)
+      cb(null, [params.message].concat(params._rest).join(' '))
+    else
+      cb(null, params.message)
   })
 }
 
@@ -16,7 +19,12 @@ function emote(params, cb) {
   process.nextTick(function() {
     cb(null, function(tecnorita, target, raw) {
       try {
-        tecnorita.chat.action(target, params.join(' '))
+        var msg
+        if(params._rest && params._rest.length)
+          msg = [params.action].concat(params._rest).join(' ')
+        else
+          msg = params.action
+        tecnorita.chat.action(target, msg)
       }
       catch(err) {
       }

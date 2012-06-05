@@ -63,12 +63,13 @@ function parseAndExec(tecnorita, from, to, command, message) {
     parsedCmd = cmdParser(command)
   }
   catch(err) {
-    return tecnorita.chat.say(target, err.message)
+    return tecnorita.chat.say(target, 'Syntax error near character ' + err.column +
+                                      ': unexpected \'' + err.found + '\'')
   }
 
   //tecnorita.chat.say(target, util.inspect(parsedCmd).replace(/\n/g, ''))
   var executor = new commands.AdhocCommand(parsedCmd)
-  executor.execute(null, function onExecutedCommand(err, result) {
+  executor.execute(from, to, null, function onExecutedCommand(err, result) {
     if(err) return tecnorita.chat.say(target, 'Error: ' + err.message)
     handleResult(tecnorita, target, message, result)
   })

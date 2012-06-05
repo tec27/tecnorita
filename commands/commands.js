@@ -11,17 +11,28 @@ var BuiltinCommand = module.exports.BuiltinCommand = function(name, params, exec
   this.name = name
   this.params = params
   this.exec = exec
+  this.frozen = true
 }
 
-BuiltinCommand.prototype.execute = function(params, cb) {
-  this.exec(params, cb)
+BuiltinCommand.prototype.execute = function(from, to, params, cb) {
+  var paramObj = {}
+  for(var i = 0; i < this.params.length; i++) {
+    paramObj[this.params[i]] = params[i]
+  }
+  if(params.length > this.params.length)
+    paramObj._rest = params.slice(this.params.length)
+
+  paramObj._from = from
+  paramObj._to = to
+
+  this.exec(paramObj, cb)
 }
 
 var AdhocCommand = module.exports.AdhocCommand = function(tokenChain) {
   this.chain = tokenChain
 }
 
-AdhocCommand.prototype.execute = function(params, cb) {
+AdhocCommand.prototype.execute = function(from, to, params, cb) {
   var self = this
   process.nextTick(function onAdhocExecNextTick() {
     var i = 0
@@ -54,9 +65,7 @@ AdhocCommand.prototype.execute = function(params, cb) {
       else if(result)
         cmdParams.push(result)
 
-      // TODO: parameter/environment var replacement, IE: %argname% => argname's value
-
-      cmd.execute(cmdParams, exec)
+      cmd.execute(from, to, cmdParams, exec)
       i++
     }
 
@@ -75,6 +84,58 @@ function(name, params, tokenChain, frozen, lastModifiedBy, lastModifiedDate) {
   this.lastModifiedDate = lastModifiedDate ? new Date(+lastModifiedDate) : new Date()
 }
 util.inherits(CustomCommand, AdhocCommand)
+
+CustomCommand.prototype.execute = function(from, to, params, cb) {
+  var paramObj = {}
+  for(var i = 0; i < this.params.length; i++) {
+    paramObj[this.params[i]] = params[i]
+  }
+  if(params.length > this.params.length)
+    paramObj._rest = params.slice(this.params.length)
+  paramObj._from = from
+  paramObj._to = to
+
+  function replaceArgs(chain) {
+    var result = [];
+    console.log('replaceArgs:')
+    console.dir(chain)
+    for(var i = 0; i < chain.length; i++) {
+      var curToken = chain[i];
+      if(isString(curToken) && curToken.indexOf('%') > -1) {
+        result[i] = replaceIn(curToken)
+      }
+      else if(util.isArray(curToken)) {
+        result[i] = replaceArgs(curToken)
+      }
+      else if(curToken.chain) {
+        result[i] = { chain: replaceArgs(curToken.chain) }
+      }
+      else result[i] = curToken
+    }
+    return result
+  }
+
+  function replaceIn(token) {
+    var match
+      , result = token
+      , regex = /%([^%]+)%/g
+    while((match = regex.exec(token))) {
+      if(paramObj.hasOwnProperty(match[1])) {
+        result = result.replace(match[0], getStringFor(paramObj[match[1]]))
+      }
+    }
+
+    return result
+  }
+
+  function getStringFor(val) {
+    if(isString(val)) return val
+    else return util.inspect(val).replace(/\n/g, '')
+  }
+
+  this.chain = replaceArgs(this.chain)
+  CustomCommand.super_.prototype.execute.call(this, from, to, null, cb)
+}
 
 var commands = {}
 
