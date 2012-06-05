@@ -5,6 +5,7 @@ var commands = require('./commands')
 
 module.exports = function(cmdList) {
   cmdList.help = new Builtin('help', ['command'], help)
+  cmdList.set = new Builtin('set', ['command', 'body' ], set)
 }
 
 function help(params, cb) {
@@ -18,4 +19,8 @@ function help(params, cb) {
       cb(null, msg)
     })
   })
+}
+
+function set(params, cb) {
+  
 }

@@ -1,6 +1,5 @@
 /*jshint laxcomma:true asi:true */
 var irc = require('irc')
-  , redis = require('redis')
   , _ = require('underscore')
   , config = require('./config-loader')
 

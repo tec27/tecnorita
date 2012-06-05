@@ -2,6 +2,8 @@
 var fs = require('fs')
   , path = require('path')
   , util = require('util')
+  , cmdParser = require('../command-parser')
+  , redis = require('../redis-client')
 
 module.exports = {}
 
@@ -48,7 +50,7 @@ AdhocCommand.prototype.execute = function(params, cb) {
       if(result && isString(result))
         cmdParams.push(result)
       else if(result && util.isArray(result))
-        cmdParams.concat(result)
+        cmdParams = cmdParams.concat(result)
       else if(result)
         cmdParams.push(result)
 
@@ -63,10 +65,14 @@ AdhocCommand.prototype.execute = function(params, cb) {
 }
 
 // a custom command is an adhoc command that has been named and given a parameter list
-var CustomCommand = module.exports.CustomCommand = function(name, params, tokenChain) {
+var CustomCommand = module.exports.CustomCommand =
+function(name, params, tokenChain, frozen, lastModifiedBy, lastModifiedDate) {
   CustomCommand.super_.call(this, tokenChain)
   this.name = name
   this.params = params
+  this.frozen = !!frozen
+  this.lastModifiedBy = lastModifiedBy
+  this.lastModifiedDate = lastModifiedDate ? new Date(+lastModifiedDate) : new Date()
 }
 util.inherits(CustomCommand, AdhocCommand)
 
@@ -93,9 +99,19 @@ var find = module.exports.find = function(name, cb) {
     })
   }
   else {
-    // TODO: look for command in redis
-    process.nextTick(function() {
-      cb(new Error("A command with the name '" + name + "' could not be found."))
+    redis.hgetall('command:' + name, function(err, cmdHash) {
+      if(err) return console.err('Error reading from redis.')
+      if(!cmdHash) return cb(new Error("A command with the name '" + name + "' could not be found."))
+      var parsed
+      try {
+        parsed = cmdParser(cmdHash.chain)
+      }
+      catch(err) {
+        return cb(err)
+      }
+      var cmd = new CustomCommand(cmdHash.name, cmdHash.params.split(','), parsed,
+                                  cmdHash.frozen == 'true', cmdHash.lastModifiedBy, cmdHash.lastModifiedDate)
+      cb(null, cmd)
     })
   }
 }
