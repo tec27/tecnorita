@@ -78,6 +78,10 @@ describe('command-parser', function() {
     )
   })
 
+  it('should handle empty arrays', function() {
+    parser('test [] test2').should.eql([ ['test', [], 'test2' ] ])
+  })
+
   it('should handle subfunctions', function() {
     var res = parser('test { test2 | test3 } { test4 | test5 }')
     res[0].length.should.eql(3)
