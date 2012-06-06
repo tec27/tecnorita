@@ -24,6 +24,7 @@ subfunction
 
 array
   = '[' ' '* list:list ' '* ']' { return list }
+  / '[' ' '* ']' { return [] }
 
 list
   = left:token ' '* ',' ' '* right:list { right.unshift(left); return right }
