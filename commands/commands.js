@@ -133,6 +133,7 @@ CustomCommand.prototype.execute = function(from, to, params, cb) {
     else return util.inspect(val).replace(/\n/g, '')
   }
 
+  // TODO: really need to do this without modifying the actual chain, so that this cmd object can be re-used
   this.chain = replaceArgs(this.chain)
   CustomCommand.super_.prototype.execute.call(this, from, to, null, cb)
 }
@@ -161,20 +162,51 @@ var find = module.exports.find = function(name, cb) {
   }
   else {
     redis.hgetall('command:' + name, function(err, cmdHash) {
-      if(err) return console.err('Error reading from redis.')
-      if(!cmdHash) return cb(new Error("A command with the name '" + name + "' could not be found."))
-      var parsed
+      if(err) return console.err('Error reading from redis: ' + err)
+      if(!cmdHash) {
+        var ret = new Error("A command with the name '" + name + "' could not be found.")
+        ret.notFound = true
+        return cb(ret)
+      }
       try {
-        parsed = cmdParser(cmdHash.chain)
+        cmdHash.chain = JSON.parse(cmdHash.chain)
+        cmdHash.params = JSON.parse(cmdHash.params)
       }
       catch(err) {
         return cb(err)
       }
-      var cmd = new CustomCommand(cmdHash.name, cmdHash.params.split(','), parsed,
+      var cmd = new CustomCommand(cmdHash.name, cmdHash.params, cmdHash.chain,
                                   cmdHash.frozen == 'true', cmdHash.lastModifiedBy, cmdHash.lastModifiedDate)
       cb(null, cmd)
     })
   }
+}
+
+var save = module.exports.save = function(cmd, cb) {
+  if(cmd.frozen || commands[cmd.name]) {
+    return process.nextTick(function() {
+      cb(new Error('This command exists and cannot be modified.'))
+    })
+  }
+
+  redis.multi()
+        .hmset('command:' + cmd.name
+              , { name: cmd.name
+                , params: JSON.stringify(cmd.params || [])
+                , chain: JSON.stringify(cmd.chain || [])
+                , frozen: cmd.frozen ? 'true' : 'false'
+                , lastModifiedBy: cmd.lastModifiedBy || ''
+                , lastModifiedDate: +(cmd.lastModifiedDate || new Date())
+                }
+              )
+        .zadd('commands', 0, cmd.name)
+        .exec(function(err, replies) {
+                  if(err) {
+                    console.err('Error writing to redis: ' + err)
+                    return cb(new Error('There was an error saving the command, please try again later.'))
+                  }
+                  cb(null, true)
+              })
 }
 
 loadBuiltins()

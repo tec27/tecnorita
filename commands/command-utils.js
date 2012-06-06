@@ -3,7 +3,7 @@ var commands = require('./commands')
   , Builtin = commands.BuiltinCommand
   , c = require('../color-utils')
   , util = require('util')
-  , redis = 
+  , redis = require('../redis-client')
 
 module.exports = function(cmdList) {
   cmdList.help = new Builtin('help', ['command'], help)
@@ -17,7 +17,7 @@ function help(params, cb) {
 
     commands.find(params.command, function onCommandFound(err, cmd) {
       if(err) return cb(err)
-      var msg = 'Syntax: ' + c.bold(params[0]) + ' ' + c.italics(cmd.params.join(' '))
+      var msg = 'Syntax: ' + c.bold(params.command) + ' ' + c.italics(cmd.params.join(' '))
       cb(null, msg)
     })
   })
@@ -25,4 +25,31 @@ function help(params, cb) {
 
 function set(params, cb) {
   console.log(util.inspect(params, false, null, true))
+  if(!params.command || !params.params || !util.isArray(params.params) || !params.body || !params.body.chain) {
+    return process.nextTick(function() {
+      cb(null, 'Syntax: ' + c.bold('set') + ' ' + c.italics('command') + ' ' + c.italics('params') +
+                ' ' + c.italics('body') +
+                ' -- Example: set myCommand [paramOne, paramTwo] { echo "%paramOne%: %paramTwo%" }')
+    })
+  }
+
+  commands.find(params.command, function onSetCommandFound(err, cmd) {
+    if(err && !err.notFound) return cb(err)
+    else if(err) {
+      cmd = new commands.CustomCommand(params.command, params.params, params.body.chain,
+                                        false /* frozen */, params._from, new Date())
+    }
+    else {
+      cmd.params = params.params
+      cmd.chain = params.body.chain
+      cmd.lastModifiedBy = params._from
+      cmd.lastModifiedDate = new Date()
+    }
+
+    commands.save(cmd, function(err, success) {
+      if(err) return cb(err)
+      else if(success) return cb(null, params.command + ' saved successfully.')
+      else return cb(new Error('There was an error saving the command, please try again later.'))
+    })
+  })
 }
