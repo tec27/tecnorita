@@ -4,8 +4,6 @@
 //
 // the same config-loader will be referenced for each require, so the config.js will never
 // be reloaded, and the defaults we initially set can be passed around properly
-var _ = require('underscore')
-
 var config =  { nick: 'tecnorita'
               , userName: 'tecnorita'
               , realName: 'tecnorita'
@@ -14,5 +12,8 @@ var config =  { nick: 'tecnorita'
               , admins: []
               , redis: 'localhost:6379'
               }
-config = _.extend(config, require('./config'))
+var imported = require('./config')
+for(var key in imported) {
+  config[key] = imported[key]
+}
 module.exports = config
