@@ -97,8 +97,6 @@ CustomCommand.prototype.execute = function(from, to, params, cb) {
 
   function replaceArgs(chain) {
     var result = [];
-    console.log('replaceArgs:')
-    console.dir(chain)
     for(var i = 0; i < chain.length; i++) {
       var curToken = chain[i];
       if(isString(curToken) && curToken.indexOf('%') > -1) {
@@ -207,6 +205,24 @@ var save = module.exports.save = function(cmd, cb) {
                   }
                   cb(null, true)
               })
+}
+
+var remove = module.exports.remove = function(name, cb) {
+  find(name, function onRemoveCommandFound(err, cmd) {
+    if(err) return cb(err)
+    if(cmd.frozen || commands[cmd.name]) return cb(new Error('This command cannot be modified.'))
+
+    redis.multi()
+            .del('command:' + cmd.name)
+            .zrem('commands', cmd.name)
+            .exec(function(err, replies) {
+              if(err) {
+                console.err('Error removing from redis: ' + err)
+                return cb(new Error('There was an error removing the command, please try again later.'))
+              }
+              cb(null, true)
+            })
+  })
 }
 
 loadBuiltins()
