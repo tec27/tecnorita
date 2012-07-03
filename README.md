@@ -35,7 +35,7 @@ They can be chained together by using `|`:
 
 ###Built-in Commands (currently implemented)
 ####command utilities
-*help* `command`
+**help** `command`
 
 Provides help for a specific command, listing its parameters.
 ```
@@ -43,7 +43,8 @@ Provides help for a specific command, listing its parameters.
 <tecnorita> Syntax: unset command
 ```
 
-*set* `name` [ `paramList` ] { `command body` }
+
+**set** `name` [ `paramList` ] { `command body` }
 
 Adds a custom command to the database.
 ```
@@ -53,7 +54,8 @@ Adds a custom command to the database.
 <tecnorita> Good news, everyone!
 ```
 
-*unset* `command`
+
+**unset** `command`
 
 Removes a custom command from the database.
 ```
@@ -62,7 +64,7 @@ Removes a custom command from the database.
 ```
 
 ####messaging
-*echo* `message`
+**echo** `message`
 
 Outputs the specified message.
 ```
@@ -70,9 +72,10 @@ Outputs the specified message.
 <tecnorita> Hello!
 ```
 
-*emote* `action`
 
-Performs the specifiedd action.
+**emote** `action`
+
+Performs the specified action.
 ```
 <user> `emote dances!
 * tecnorita dances!
