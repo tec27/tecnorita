@@ -1,6 +1,5 @@
 /*jshint laxcomma:true asi:true */
 var irc = require('irc')
-  , _ = require('underscore')
   , config = require('./config-loader')
 
 function Tecnorita(config) {
@@ -58,11 +57,11 @@ Tecnorita.prototype.onTopic = function(channel, topic, nick, message) {
 }
 
 Tecnorita.prototype.onNickChange = function(oldNick, newNick, channels, message) {
-  _.each(this.channels, function(chanData) {
+  for(var chanData in this.channels) {
     var oldVal = chanData[oldNick] || ''
     ;delete chanData[oldNick]
     chanData[newNick] = oldVal
-  })
+  }
 }
 
 Tecnorita.prototype.onMessage = function(nick, to, text, message) {
