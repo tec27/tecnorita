@@ -23,54 +23,59 @@ Commands can be executed by addressing the bot directly:
 ```
 Or by preceding them with the prefix specified in the configuration:
 ```
-<user> \`echo hello
+<user> `echo hello
 <tecnorita> hello
 ```
 
 They can be chained together by using `|`:
 ```
-<user> \`echo dances! | emote
-\* tecnorita dances!
+<user> `echo dances! | emote
+* tecnorita dances!
 ```
 
 ###Built-in Commands (currently implemented)
 ####command utilities
 *help* `command`
+
 Provides help for a specific command, listing its parameters.
 ```
-<user> \`help unset
+<user> `help unset
 <tecnorita> Syntax: unset command
 ```
 
 *set* `name` [ `paramList` ] { `command body` }
+
 Adds a custom command to the database.
 ```
-<user> \`set addressedMsg [ target, msg ] { echo "%msg%, %target%!" }
+<user> `set addressedMsg [ target, msg ] { echo "%msg%, %target%!" }
 <tecnorita> addressedMsg saved successfully.
-<user> \`addressedMsg everyone "Good news"
+<user> `addressedMsg everyone "Good news"
 <tecnorita> Good news, everyone!
 ```
 
 *unset* `command`
+
 Removes a custom command from the database.
 ```
-<user> \`unset addressedMsg
+<user> `unset addressedMsg
 <tecnorita> addressedMsg removed successfully.
 ```
 
 ####messaging
 *echo* `message`
+
 Outputs the specified message.
 ```
-<user> \`echo Hello!
+<user> `echo Hello!
 <tecnorita> Hello!
 ```
 
 *emote* `action`
+
 Performs the specifiedd action.
 ```
-<user> \`emote dances!
-\* tecnorita dances!
+<user> `emote dances!
+* tecnorita dances!
 ```
 
 ###Built-in Commands (coming soon)
